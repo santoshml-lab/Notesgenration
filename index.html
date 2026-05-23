@@ -1,12 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Notes App 🚀</title>
+<title>AI Notes Pro 🚀</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <style>
@@ -19,48 +19,27 @@ color:white;
 }
 
 /* HEADER */
-.header{
+header{
 text-align:center;
 padding:20px;
-font-size:24px;
+font-size:26px;
 font-weight:700;
 color:#38bdf8;
 }
 
-/* SCREEN */
-.screen{
-display:none;
-padding:20px;
-}
-
-.active{
-display:block;
-}
-
-/* GRID */
-.grid{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:15px;
-}
-
 /* CARD */
 .card{
+max-width:900px;
+margin:20px auto;
 background:#111827;
-padding:18px;
-border-radius:15px;
-text-align:center;
-cursor:pointer;
-transition:0.3s;
-}
-
-.card:hover{
-transform:scale(1.05);
-background:#1e293b;
+padding:20px;
+border-radius:18px;
+border:1px solid rgba(255,255,255,0.08);
+box-shadow:0 0 30px rgba(56,189,248,0.15);
 }
 
 /* INPUT */
-input,select{
+input{
 width:100%;
 padding:12px;
 margin-top:10px;
@@ -78,10 +57,11 @@ padding:12px;
 margin-top:12px;
 border:none;
 border-radius:10px;
-background:linear-gradient(45deg,#38bdf8,#6366f1);
-color:white;
 font-weight:700;
 cursor:pointer;
+background:linear-gradient(45deg,#38bdf8,#6366f1);
+color:white;
+transition:0.3s;
 }
 
 button:hover{
@@ -94,12 +74,14 @@ margin-top:15px;
 background:#0b1220;
 padding:15px;
 border-radius:12px;
-line-height:1.7;
+line-height:1.8;
+max-height:400px;
+overflow:auto;
 }
 
-/* BACK BUTTON */
-.back{
-background:#1e293b;
+/* DOWNLOAD BTN */
+.download{
+background:linear-gradient(45deg,#22c55e,#16a34a);
 }
 
 </style>
@@ -107,83 +89,25 @@ background:#1e293b;
 
 <body>
 
-<div class="header">📚 AI Notes App (Class 1–10)</div>
-
-<!-- HOME -->
-<div id="home" class="screen active">
-
-<h2 style="text-align:center;">Welcome 🚀</h2>
-
-<div class="grid">
-
-<div class="card" onclick="go('classScreen')">
-🎯 Start Learning
-</div>
+<header>📚 AI Notes Pro</header>
 
 <div class="card">
-⭐ Saved Notes
+
+<h2>Generate Smart Notes 🚀</h2>
+
+<input id="cls" placeholder="Class (1-10)">
+<input id="subject" placeholder="Subject">
+<input id="chapter" placeholder="Chapter">
+
+<button onclick="getNotes()">Generate Notes</button>
+
+<button class="download" onclick="downloadNotes()">
+⬇ Download Notes
+</button>
+
+<div class="output" id="notesBox">
+Your notes will appear here...
 </div>
-
-<div class="card">
-📊 Progress
-</div>
-
-<div class="card">
-🔥 AI Features
-</div>
-
-</div>
-
-</div>
-
-<!-- CLASS -->
-<div id="classScreen" class="screen">
-
-<h2>Select Class</h2>
-
-<select id="cls">
-<option>Class 1</option>
-<option>Class 2</option>
-<option>Class 3</option>
-<option>Class 4</option>
-<option>Class 5</option>
-<option>Class 6</option>
-<option>Class 7</option>
-<option>Class 8</option>
-<option>Class 9</option>
-<option>Class 10</option>
-</select>
-
-<button onclick="go('subjectScreen')">Continue 🚀</button>
-
-<button class="back" onclick="go('home')">⬅ Back</button>
-
-</div>
-
-<!-- SUBJECT -->
-<div id="subjectScreen" class="screen">
-
-<h2>Select Subject</h2>
-
-<div class="grid">
-
-<div class="card" onclick="setSubject('Math')">📐 Math</div>
-<div class="card" onclick="setSubject('Science')">🔬 Science</div>
-<div class="card" onclick="setSubject('English')">📖 English</div>
-<div class="card" onclick="setSubject('History')">🏛 History</div>
-<div class="card" onclick="setSubject('Geography')">🌍 Geography</div>
-<div class="card" onclick="setSubject('Computer')">💻 Computer</div>
-
-</div>
-
-<input id="subject" placeholder="Selected Subject">
-<input id="chapter" placeholder="Chapter Name">
-
-<button onclick="getNotes()">Generate Notes 🚀</button>
-
-<div class="output" id="notesBox">Notes will appear here...</div>
-
-<button class="back" onclick="go('classScreen')">⬅ Back</button>
 
 </div>
 
@@ -191,39 +115,51 @@ background:#1e293b;
 
 const API = "https://student-learning-system-r6bi.onrender.com";
 
-function go(id){
+let lastNotes = "";
 
-document.querySelectorAll(".screen")
-.forEach(s=>s.classList.remove("active"));
-
-document.getElementById(id)
-.classList.add("active");
-
-}
-
-function setSubject(sub){
-document.getElementById("subject").value = sub;
-}
-
+/* GENERATE NOTES */
 async function getNotes(){
 
-notesBox.innerHTML = "⚡ AI generating notes...";
+notesBox.innerHTML = "⚡ Generating AI Notes...";
 
 let res = await fetch(API+"/generate-notes",{
 method:"POST",
-headers:{"Content-Type":"application/json"},
+headers:{
+"Content-Type":"application/json"
+},
 body:JSON.stringify({
 student_name:"student",
-student_class:document.getElementById("cls").value,
-subject:document.getElementById("subject").value,
-chapter:document.getElementById("chapter").value
+student_class:cls.value,
+subject:subject.value,
+chapter:chapter.value
 })
 });
 
 let data = await res.json();
 
-notesBox.innerHTML =
-marked.parse(data.notes || "No notes found");
+lastNotes = data.notes || "No notes found";
+
+notesBox.innerHTML = marked.parse(lastNotes);
+
+}
+
+/* DOWNLOAD NOTES */
+function downloadNotes(){
+
+if(!lastNotes){
+alert("No notes to download!");
+return;
+}
+
+let blob = new Blob([lastNotes], {type:"text/plain"});
+let url = URL.createObjectURL(blob);
+
+let a = document.createElement("a");
+a.href = url;
+a.download = "AI_Notes.txt";
+a.click();
+
+URL.revokeObjectURL(url);
 
 }
 
